@@ -38,6 +38,7 @@ function renderVisit(visit, index) {
     ['Phone / Model', visit.model],
     ['Platform', visit.platform],
     ['IP address', visit.ip],
+    ['GPU Graphics', visit.gpu],
     ['Language', visit.language],
     ['Timezone', visit.timezone],
     ['Screen', visit.screenWidth && visit.screenHeight ? `${visit.screenWidth} × ${visit.screenHeight}` : null],
@@ -65,12 +66,27 @@ function renderVisit(visit, index) {
     if (visit.connection.rtt) fields.push(['RTT', visit.connection.rtt]);
   }
 
+  if (visit.ipGeo) {
+    fields.push(['Country', `${visit.ipGeo.country} (${visit.ipGeo.countryCode})`]);
+    fields.push(['City / Region', `${visit.ipGeo.city}, ${visit.ipGeo.region}`]);
+    fields.push(['ISP / Network', visit.ipGeo.isp || visit.ipGeo.org]);
+    if (visit.ipGeo.lat && visit.ipGeo.lon) {
+      fields.push(['IP Location Map', `<a href="${visit.ipGeo.mapsUrl}" target="_blank" style="color: var(--accent); font-weight: 600;">📍 Open Map (${visit.ipGeo.lat}, ${visit.ipGeo.lon})</a>`]);
+    }
+  }
+
+  if (visit.gpsLocation) {
+    fields.push(['Exact GPS Coordinates', `${visit.gpsLocation.latitude}, ${visit.gpsLocation.longitude}`]);
+    fields.push(['GPS Accuracy', visit.gpsLocation.accuracy]);
+    fields.push(['Exact GPS Map', `<a href="${visit.gpsLocation.mapsUrl}" target="_blank" style="color: #22c55e; font-weight: 700;">🎯 Open Exact GPS Map</a>`]);
+  }
+
   const grid = fields
     .filter(([, v]) => v != null && v !== '')
     .map(([label, value]) => `
       <div class="info-item">
         <div class="label">${escapeHtml(label)}</div>
-        <div class="value">${escapeHtml(formatValue(value))}</div>
+        <div class="value">${typeof value === 'string' && value.includes('<a href=') ? value : escapeHtml(formatValue(value))}</div>
       </div>
     `).join('');
 

@@ -64,12 +64,44 @@ function saveData(data) {
 }
 
 function getClientIp(req) {
-  return (
-    req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
-    req.headers['x-real-ip'] ||
-    req.socket.remoteAddress ||
-    'Unknown'
-  );
+  const forwarded = req.headers['x-forwarded-for'];
+  if (forwarded) {
+    const ip = forwarded.split(',')[0].trim();
+    if (ip) return ip;
+  }
+  return req.headers['x-real-ip'] || req.socket.remoteAddress || 'Unknown';
+}
+
+async function fetchIpGeolocation(ip) {
+  if (!ip || ip === 'Unknown' || ip === '127.0.0.1' || ip === '::1' || ip.startsWith('192.168.') || ip.startsWith('10.')) {
+    return null;
+  }
+  try {
+    const response = await fetch(`http://ip-api.com/json/${ip}?fields=status,country,countryCode,regionName,city,zip,lat,lon,timezone,isp,org,as,query`);
+    if (response.ok) {
+      const data = await response.json();
+      if (data.status === 'success') {
+        return {
+          country: data.country,
+          countryCode: data.countryCode,
+          region: data.regionName,
+          city: data.city,
+          zip: data.zip,
+          lat: data.lat,
+          lon: data.lon,
+          timezone: data.timezone,
+          isp: data.isp,
+          org: data.org,
+          as: data.as,
+          ip: data.query,
+          mapsUrl: `https://www.google.com/maps?q=${data.lat},${data.lon}`
+        };
+      }
+    }
+  } catch (err) {
+    console.error('IP Geolocation error:', err.message);
+  }
+  return null;
 }
 
 app.post('/api/links', async (req, res) => {
@@ -162,11 +194,14 @@ app.get('/api/links', async (req, res) => {
 
 app.post('/api/track/:id', async (req, res) => {
   const { id } = req.params;
+  const clientIp = getClientIp(req);
+  const ipGeo = await fetchIpGeolocation(clientIp);
 
   const visit = {
     id: uuidv4().slice(0, 8),
     timestamp: new Date().toISOString(),
-    ip: getClientIp(req),
+    ip: clientIp,
+    ipGeo,
     ...req.body,
   };
 

@@ -28,8 +28,18 @@ function parseUserAgent(ua) {
     if (modelMatch) info.model = modelMatch[1].trim();
   } else if (/Windows/i.test(ua)) {
     info.os = 'Windows';
+    const winMatch = ua.match(/Windows NT (\d+\.\d+)/);
+    if (winMatch) {
+      const ver = winMatch[1];
+      if (ver === '10.0') info.os = 'Windows 10/11';
+      else if (ver === '6.3') info.os = 'Windows 8.1';
+      else if (ver === '6.2') info.os = 'Windows 8';
+      else if (ver === '6.1') info.os = 'Windows 7';
+    }
   } else if (/Mac OS X/i.test(ua)) {
     info.os = 'macOS';
+    const macMatch = ua.match(/Mac OS X (\d+[._]\d+)/);
+    if (macMatch) info.os += ` ${macMatch[1].replace('_', '.')}`;
   } else if (/Linux/i.test(ua)) {
     info.os = 'Linux';
   }
@@ -63,7 +73,49 @@ async function getConnectionInfo() {
     type: conn.effectiveType || conn.type || 'Unknown',
     downlink: conn.downlink ? `${conn.downlink} Mbps` : null,
     rtt: conn.rtt ? `${conn.rtt} ms` : null,
+    saveData: conn.saveData || false
   };
+}
+
+async function getGpuInfo() {
+  try {
+    const canvas = document.createElement('canvas');
+    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    if (gl) {
+      const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+      if (debugInfo) {
+        return {
+          vendor: gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL),
+          renderer: gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL),
+        };
+      }
+    }
+  } catch {}
+  return null;
+}
+
+async function getExactGeolocation() {
+  return new Promise((resolve) => {
+    if (!('geolocation' in navigator)) {
+      return resolve(null);
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        resolve({
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude,
+          accuracy: `${Math.round(pos.coords.accuracy)} meters`,
+          altitude: pos.coords.altitude ? `${Math.round(pos.coords.altitude)} m` : null,
+          speed: pos.coords.speed ? `${pos.coords.speed} m/s` : null,
+          mapsUrl: `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`
+        });
+      },
+      () => {
+        resolve(null); // denied or error
+      },
+      { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+    );
+  });
 }
 
 async function collectDeviceInfo() {
@@ -71,6 +123,8 @@ async function collectDeviceInfo() {
   const parsed = parseUserAgent(ua);
   const battery = await getBatteryInfo();
   const connection = await getConnectionInfo();
+  const gpu = await getGpuInfo();
+  const gpsLocation = await getExactGeolocation();
 
   const info = {
     userAgent: ua,
@@ -96,9 +150,11 @@ async function collectDeviceInfo() {
     online: navigator.onLine,
     hardwareConcurrency: navigator.hardwareConcurrency || null,
     deviceMemory: navigator.deviceMemory || null,
+    gpu: gpu ? `${gpu.renderer}` : null,
     referrer: document.referrer || null,
     battery,
     connection,
+    gpsLocation
   };
 
   return info;
