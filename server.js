@@ -5,7 +5,9 @@ const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const DATA_FILE = path.join(__dirname, 'data.json');
+const DATA_FILE = process.env.VERCEL
+  ? path.join('/tmp', 'data.json')
+  : path.join(__dirname, 'data.json');
 
 app.use(express.json({ limit: '1mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -22,7 +24,11 @@ function loadData() {
 }
 
 function saveData(data) {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+  try {
+    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+  } catch (err) {
+    console.error('Save data error:', err);
+  }
 }
 
 function getClientIp(req) {
@@ -104,6 +110,10 @@ app.get('/dashboard/:id', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
 });
 
-app.listen(PORT, () => {
-  console.log(`Phone Track Link running at http://localhost:${PORT}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Phone Track Link running at http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;
