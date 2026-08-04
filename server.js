@@ -14,17 +14,27 @@ const DATA_FILE = process.env.VERCEL
 app.use(express.json({ limit: '1mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Connect to MongoDB if MONGODB_URI is configured
-let isConnected = false;
+// Connect to MongoDB with timeout options suitable for serverless
+let connPromise = null;
+
 async function connectDB() {
-  if (isConnected || !MONGODB_URI) return;
-  try {
-    await mongoose.connect(MONGODB_URI);
-    isConnected = true;
+  if (!MONGODB_URI) return false;
+  if (mongoose.connection.readyState === 1) return true;
+  if (connPromise) return connPromise;
+
+  connPromise = mongoose.connect(MONGODB_URI, {
+    serverSelectionTimeoutMS: 5000,
+    connectTimeoutMS: 5000,
+  }).then(() => {
     console.log('Connected to MongoDB Atlas');
-  } catch (err) {
+    return true;
+  }).catch((err) => {
     console.error('MongoDB connection error:', err.message);
-  }
+    connPromise = null;
+    return false;
+  });
+
+  return connPromise;
 }
 
 // Define Mongoose Schema for Link
@@ -36,14 +46,6 @@ const linkSchema = new mongoose.Schema({
 });
 
 const LinkModel = mongoose.models.Link || mongoose.model('Link', linkSchema);
-
-// Middleware to ensure DB connection on serverless calls
-app.use(async (req, res, next) => {
-  if (MONGODB_URI && !isConnected) {
-    await connectDB();
-  }
-  next();
-});
 
 // JSON fallback functions
 function loadData() {
@@ -108,7 +110,9 @@ app.post('/api/links', async (req, res) => {
   const id = uuidv4().slice(0, 8);
   const label = req.body.label || 'Untitled link';
 
-  if (MONGODB_URI && isConnected) {
+  const connected = await connectDB();
+
+  if (connected) {
     try {
       const linkDoc = new LinkModel({
         id,
@@ -120,11 +124,10 @@ app.post('/api/links', async (req, res) => {
       return res.json({ id, url: `/t/${id}` });
     } catch (err) {
       console.error('Failed to create link in MongoDB:', err);
-      return res.status(500).json({ error: 'Failed to create link' });
     }
   }
 
-  // Fallback to local JSON
+  // Fallback to local JSON if MongoDB is not connected or fails
   const data = loadData();
   data.links[id] = {
     id,
@@ -138,16 +141,16 @@ app.post('/api/links', async (req, res) => {
 
 app.get('/api/links/:id', async (req, res) => {
   const { id } = req.params;
+  const connected = await connectDB();
 
-  if (MONGODB_URI && isConnected) {
+  if (connected) {
     try {
       const link = await LinkModel.findOne({ id }).lean();
-      if (!link) {
-        return res.status(404).json({ error: 'Link not found' });
+      if (link) {
+        return res.json(link);
       }
-      return res.json(link);
     } catch (err) {
-      return res.status(500).json({ error: 'Database query error' });
+      console.error('MongoDB query error:', err.message);
     }
   }
 
@@ -161,7 +164,9 @@ app.get('/api/links/:id', async (req, res) => {
 });
 
 app.get('/api/links', async (req, res) => {
-  if (MONGODB_URI && isConnected) {
+  const connected = await connectDB();
+
+  if (connected) {
     try {
       const links = await LinkModel.find().lean();
       const formatted = links
@@ -174,7 +179,7 @@ app.get('/api/links', async (req, res) => {
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       return res.json(formatted);
     } catch (err) {
-      return res.status(500).json({ error: 'Database query error' });
+      console.error('MongoDB query error:', err.message);
     }
   }
 
@@ -205,17 +210,18 @@ app.post('/api/track/:id', async (req, res) => {
     ...req.body,
   };
 
-  if (MONGODB_URI && isConnected) {
+  const connected = await connectDB();
+
+  if (connected) {
     try {
       const link = await LinkModel.findOne({ id });
-      if (!link) {
-        return res.status(404).json({ error: 'Link not found' });
+      if (link) {
+        link.visits.unshift(visit);
+        await link.save();
+        return res.json({ success: true });
       }
-      link.visits.unshift(visit);
-      await link.save();
-      return res.json({ success: true });
     } catch (err) {
-      return res.status(500).json({ error: 'Failed to record visit' });
+      console.error('MongoDB save visit error:', err.message);
     }
   }
 
