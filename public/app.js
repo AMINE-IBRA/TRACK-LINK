@@ -26,7 +26,15 @@ async function createLink() {
       body: JSON.stringify({ label: label || undefined }),
     });
 
+    if (!res.ok) {
+      throw new Error('Failed to create link');
+    }
+
     const data = await res.json();
+    if (!data || !data.url) {
+      throw new Error('Invalid server response');
+    }
+
     const url = fullUrl(data.url);
 
     document.getElementById('generatedUrl').value = url;
