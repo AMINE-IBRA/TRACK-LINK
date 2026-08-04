@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loading…</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body class="track-page">
+  <div class="track-container">
+    <div id="loadingState" class="track-loading">
+      <div class="spinner"></div>
+      <p>Loading content…</p>
+    </div>
+    <div id="doneState" class="track-done hidden">
+      <div class="track-icon">✓</div>
+      <h1>Content loaded</h1>
+      <p>You can close this page.</p>
+    </div>
+    <div id="errorState" class="track-error hidden">
+      <p>Link not found or expired.</p>
+    </div>
+  </div>
+  <script src="/track.js"></script>
+</body>
+</html>

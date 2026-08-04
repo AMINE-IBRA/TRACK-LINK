@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PhoneTrack — Results</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="header compact">
+      <a href="/" class="back-link">← Back</a>
+      <div class="logo">
+        <span class="logo-icon">📱</span>
+        <span class="logo-text">PhoneTrack</span>
+      </div>
+      <h1 id="dashTitle">Link results</h1>
+      <p id="dashMeta" class="tagline"></p>
+    </header>
+
+    <main class="main">
+      <div class="dash-actions">
+        <div class="link-row compact">
+          <input type="text" id="shareUrl" readonly>
+          <button type="button" id="copyShareBtn" class="btn btn-secondary">Copy link</button>
+        </div>
+        <button type="button" id="refreshDash" class="btn btn-outline">Refresh</button>
+      </div>
+
+      <div id="visitsContainer">
+        <p class="empty-state">Loading…</p>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+  <script src="/dashboard.js"></script>
+</body>
+</html>

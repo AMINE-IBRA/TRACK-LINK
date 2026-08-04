@@ -1,0 +1,73 @@
+{
+  "links": {
+    "47a5006e": {
+      "id": "47a5006e",
+      "label": "Test link",
+      "createdAt": "2026-08-04T21:27:28.808Z",
+      "visits": []
+    },
+    "9fa2df5c": {
+      "id": "9fa2df5c",
+      "label": "Untitled link",
+      "createdAt": "2026-08-04T21:28:50.376Z",
+      "visits": [
+        {
+          "id": "67a67047",
+          "timestamp": "2026-08-04T21:29:09.807Z",
+          "ip": "::1",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
+          "deviceType": "Desktop",
+          "os": "Windows",
+          "browser": "Microsoft Edge",
+          "model": null,
+          "platform": "Win32",
+          "language": "fr",
+          "languages": [
+            "fr",
+            "fr-FR",
+            "en",
+            "en-GB",
+            "en-US"
+          ],
+          "screenWidth": 1280,
+          "screenHeight": 720,
+          "viewportWidth": 1908,
+          "viewportHeight": 882,
+          "pixelRatio": 1,
+          "colorDepth": 24,
+          "orientation": "landscape-primary",
+          "timezone": "Africa/Casablanca",
+          "timezoneOffset": -60,
+          "touchSupport": true,
+          "maxTouchPoints": 10,
+          "cookiesEnabled": true,
+          "online": true,
+          "hardwareConcurrency": 8,
+          "deviceMemory": 16,
+          "referrer": null,
+          "battery": {
+            "level": "89%",
+            "charging": false
+          },
+          "connection": {
+            "type": "3g",
+            "downlink": "1.35 Mbps",
+            "rtt": "300 ms"
+          }
+        }
+      ]
+    },
+    "911f3521": {
+      "id": "911f3521",
+      "label": "Untitled link",
+      "createdAt": "2026-08-04T21:31:30.152Z",
+      "visits": []
+    },
+    "b4344e68": {
+      "id": "b4344e68",
+      "label": "Untitled link",
+      "createdAt": "2026-08-04T21:31:43.130Z",
+      "visits": []
+    }
+  }
+}

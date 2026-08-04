@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PhoneTrack — Generate Link</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="logo">
+        <span class="logo-icon">📱</span>
+        <span class="logo-text">PhoneTrack</span>
+      </div>
+      <p class="tagline">Generate a link. Share it. See phone info when someone opens it.</p>
+    </header>
+
+    <main class="main">
+      <section class="card create-card">
+        <h2>Create tracking link</h2>
+        <p class="card-desc">Give your link a name, then share the URL. When someone taps it, their device details are recorded for you.</p>
+
+        <div class="form-group">
+          <label for="label">Link name (optional)</label>
+          <input type="text" id="label" placeholder="e.g. Friend's phone, Test link…" maxlength="80">
+        </div>
+
+        <button type="button" id="createBtn" class="btn btn-primary">
+          <span class="btn-text">Generate link</span>
+          <span class="btn-loader hidden"></span>
+        </button>
+
+        <div id="resultBox" class="result-box hidden">
+          <p class="result-label">Your tracking link</p>
+          <div class="link-row">
+            <input type="text" id="generatedUrl" readonly>
+            <button type="button" id="copyBtn" class="btn btn-secondary">Copy</button>
+          </div>
+          <a id="viewDashboard" class="btn btn-outline" href="#">View results →</a>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-header-row">
+          <h2>Your links</h2>
+          <button type="button" id="refreshBtn" class="btn-icon" title="Refresh">↻</button>
+        </div>
+        <div id="linksList" class="links-list">
+          <p class="empty-state">No links yet. Create one above.</p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>For educational use only. Always get consent before tracking devices.</p>
+    </footer>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

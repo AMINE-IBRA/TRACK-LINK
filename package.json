@@ -1,0 +1,14 @@
+{
+  "name": "phone-track-link",
+  "version": "1.0.0",
+  "description": "Generate tracking links that collect phone/device information",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "uuid": "^10.0.0"
+  }
+}
