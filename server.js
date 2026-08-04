@@ -16,9 +16,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Connect to MongoDB with timeout options suitable for serverless
 let connPromise = null;
+let lastDbError = null;
 
 async function connectDB() {
-  if (!MONGODB_URI) return false;
+  if (!MONGODB_URI) {
+    lastDbError = 'MONGODB_URI environment variable is missing';
+    return false;
+  }
   if (mongoose.connection.readyState === 1) return true;
   if (connPromise) return connPromise;
 
@@ -27,15 +31,27 @@ async function connectDB() {
     connectTimeoutMS: 5000,
   }).then(() => {
     console.log('Connected to MongoDB Atlas');
+    lastDbError = null;
     return true;
   }).catch((err) => {
     console.error('MongoDB connection error:', err.message);
+    lastDbError = err.message;
     connPromise = null;
     return false;
   });
 
   return connPromise;
 }
+
+app.get('/api/health', async (req, res) => {
+  const connected = await connectDB();
+  res.json({
+    status: connected ? 'ok' : 'error',
+    mongoConfigured: !!MONGODB_URI,
+    mongoConnected: connected,
+    dbError: lastDbError,
+  });
+});
 
 // Define Mongoose Schema for Link
 const linkSchema = new mongoose.Schema({
